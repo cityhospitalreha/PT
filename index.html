@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>リハ自主トレ支援アプリ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap');
+
+  :root {
+    --bg: #f5f3ee;
+    --white: #ffffff;
+    --pt-color: #1a6bb5;
+    --pt-light: #e8f2fb;
+    --pt-mid: #4d94d4;
+    --ot-color: #2a9d5c;
+    --ot-light: #e8f8ef;
+    --ot-mid: #5bbf85;
+    --text: #1a1a1a;
+    --text-mid: #444;
+    --text-light: #888;
+    --border: #ddd;
+    --accent: #e84855;
+    --shadow: 0 4px 20px rgba(0,0,0,0.10);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; min-height: 100vh; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: var(--white);
+    padding: 18px 24px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .header-back {
+    width: 48px; height: 48px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    background: var(--white);
+    font-size: 22px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+    flex-shrink: 0;
+  }
+  .header-back:hover { background: var(--bg); }
+
+  .header-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .header-badge {
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+  }
+  .badge-pt { background: var(--pt-color); }
+  .badge-ot { background: var(--ot-color); }
+
+  /* ===== HOME SCREEN ===== */
+  #screen-home {
+    background: linear-gradient(160deg, #f5f3ee 0%, #e8f0f8 100%);
+  }
+
+  .home-header {
+    padding: 40px 28px 28px;
+    text-align: center;
+  }
+  .home-logo {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--text-light);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .home-title {
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1.2;
+    color: var(--text);
+  }
+  .home-title span {
+    display: block;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-mid);
+    margin-top: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .home-cards {
+    padding: 20px 24px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;
+  }
+
+  .home-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    cursor: pointer;
+    transition: all .25s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+  }
+
+  .home-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  }
+  .home-card:active { transform: scale(0.98); }
+
+  .home-card.pt-card { border-color: var(--pt-color); }
+  .home-card.ot-card { border-color: var(--ot-color); }
+
+  .home-card-bg {
+    position: absolute;
+    right: -20px; top: -20px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    opacity: 0.12;
+  }
+  .pt-card .home-card-bg { background: var(--pt-color); }
+  .ot-card .home-card-bg { background: var(--ot-color); }
+
+  .home-card-icon {
+    font-size: 52px;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .home-card-abbr {
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .pt-card .home-card-abbr { color: var(--pt-color); }
+  .ot-card .home-card-abbr { color: var(--ot-color); }
+
+  .home-card-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-mid);
+    margin-bottom: 10px;
+  }
+  .home-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .home-card-tag {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .pt-card .home-card-tag { background: var(--pt-light); color: var(--pt-color); }
+  .ot-card .home-card-tag { background: var(--ot-light); color: var(--ot-color); }
+
+  .home-card-arrow {
+    position: absolute;
+    right: 24px; bottom: 28px;
+    font-size: 28px;
+    opacity: 0.4;
+  }
+
+  /* ===== LIST SCREEN ===== */
+  .list-body {
+    flex: 1;
+    padding: 20px 20px 0;
+    overflow-y: auto;
+  }
+
+  .section-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-light);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    margin-left: 4px;
+  }
+
+  .exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .exercise-item {
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all .2s;
+    border: 2px solid transparent;
+    position: relative;
+  }
+  .exercise-item.checked { border-color: currentColor; }
+  .exercise-item:hover { transform: translateX(4px); }
+
+  .exercise-check {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    border: 2.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: all .2s;
+    cursor: pointer;
+  }
+  .exercise-item.checked .exercise-check {
+    border-color: transparent;
+    color: white;
+  }
+
+  .exercise-icon-box {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .exercise-info { flex: 1; }
+  .exercise-name {
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .exercise-desc {
+    font-size: 13px;
+    color: var(--text-light);
+  }
+
+  .exercise-go {
+    font-size: 22px;
+    opacity: 0.35;
+  }
+
+  /* PT colors */
+  .pt-theme .exercise-check.checked-bg { background: var(--pt-color); }
+  .pt-theme .exercise-item.checked { color: var(--pt-color); }
+  .pt-theme .exercise-item.checked .exercise-check { background: var(--pt-color); }
+  .pt-theme .exercise-icon-box { background: var(--pt-light); }
+
+  /* OT colors */
+  .ot-theme .exercise-check.checked-bg { background: var(--ot-color); }
+  .ot-theme .exercise-item.checked { color: var(--ot-color); }
+  .ot-theme .exercise-item.checked .exercise-check { background: var(--ot-color); }
+  .ot-theme .exercise-icon-box { background: var(--ot-light); }
+
+  /* ===== SETTINGS PANEL ===== */
+  .settings-panel {
+    background: var(--white);
+    border-top: 2px solid var(--border);
+    padding: 20px 20px 28px;
+  }
+
+  .settings-row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+  .settings-label {
+    font-size: 15px;
+    font-weight: 700;
+    width: 72px;
+    flex-shrink: 0;
+    color: var(--text-mid);
+  }
+  .settings-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .settings-btn {
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    background: var(--white);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .18s;
+    font-family: inherit;
+  }
+  .settings-btn:hover { border-color: #aaa; }
+  .settings-btn.active { color: white; border-color: transparent; }
+  .pt-theme .settings-btn.active { background: var(--pt-color); }
+  .ot-theme .settings-btn.active { background: var(--ot-color); }
+
+  .selected-count {
+    font-size: 14px;
+    color: var(--text-light);
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .selected-count strong { color: var(--text); font-size: 18px; }
+
+  .print-btn {
+    width: 100%;
+    padding: 18px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: 18px;
+    font-weight: 900;
+    color: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: all .2s;
+    font-family: inherit;
+    letter-spacing: 0.05em;
+  }
+  .print-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .print-btn:active { transform: translateY(0); }
+  .pt-theme .print-btn { background: var(--pt-color); }
+  .ot-theme .print-btn { background: var(--ot-color); }
+
+  /* ===== DETAIL SCREEN ===== */
+  #screen-detail {
+    background: var(--white);
+  }
+
+  .detail-anim-area {
+    background: var(--bg);
+    margin: 20px 20px 0;
+    border-radius: var(--radius);
+    min-height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .anim-canvas {
+    width: 100%;
+    height: 260px;
+    position: relative;
+  }
+
+  /* SVG-based stick figure animation */
+  .stick-figure {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .detail-info {
+    padding: 24px 20px 0;
+  }
+
+  .detail-name {
+    font-size: 30px;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+
+  .detail-reps {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .pt-theme .detail-reps { background: var(--pt-light); color: var(--pt-color); }
+  .ot-theme .detail-reps { background: var(--ot-light); color: var(--ot-color); }
+
+  .detail-caution {
+    background: #fff8e8;
+    border-left: 4px solid #f0a500;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 14px 16px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #664d00;
+    margin-bottom: 20px;
+  }
+  .detail-caution-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ===== CONTROLS ===== */
+  .controls {
+    padding: 16px 20px;
+    background: var(--white);
+    border-top: 2px solid var(--border);
+  }
+
+  .controls-top {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .ctrl-btn {
+    flex: 1;
+    padding: 14px 10px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border);
+    background: var(--white);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all .18s;
+    font-family: inherit;
+  }
+  .ctrl-btn:hover { background: var(--bg); }
+  .ctrl-btn .ctrl-icon { font-size: 24px; }
+  .ctrl-btn.primary { color: white; border-color: transparent; }
+  .pt-theme .ctrl-btn.primary { background: var(--pt-color); }
+  .ot-theme .ctrl-btn.primary { background: var(--ot-color); }
+
+  .controls-bottom {
+    display: flex;
+    gap: 10px;
+  }
+
+  .speed-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border);
+    background: var(--white);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all .18s;
+    font-family: inherit;
+  }
+  .speed-btn.active { border-color: #888; background: #f0f0f0; }
+  .speed-btn:hover { background: var(--bg); }
+
+  /* ===== PRINT PREVIEW ===== */
+  #screen-print {
+    background: var(--bg);
+  }
+
+  .print-sheet {
+    background: white;
+    margin: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .print-sheet-header {
+    padding: 20px 24px 16px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .print-sheet-title {
+    font-size: 22px;
+    font-weight: 900;
+  }
+  .print-sheet-date {
+    font-size: 13px;
+    color: var(--text-light);
+  }
+
+  .print-exercises {
+    padding: 16px 24px;
+  }
+
+  .print-ex {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px dashed var(--border);
+    align-items: flex-start;
+  }
+  .print-ex:last-child { border-bottom: none; }
+
+  .print-ex-icon {
+    font-size: 40px;
+    flex-shrink: 0;
+    width: 60px; height: 60px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 14px;
+  }
+  .print-ex-pt { background: var(--pt-light); }
+  .print-ex-ot { background: var(--ot-light); }
+
+  .print-ex-body { flex: 1; }
+  .print-ex-name { font-size: 19px; font-weight: 900; margin-bottom: 4px; }
+  .print-ex-reps { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .print-ex-reps-pt { color: var(--pt-color); }
+  .print-ex-reps-ot { color: var(--ot-color); }
+  .print-ex-note { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+
+  .print-ex-qr {
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .qr-mock {
+    width: 56px; height: 56px;
+    background: var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-light);
+    text-align: center;
+    font-weight: 700;
+    line-height: 1.3;
+    border: 2px dashed #ccc;
+  }
+
+  .print-footer {
+    padding: 16px 24px;
+    background: var(--bg);
+    border-top: 2px solid var(--border);
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-light);
+  }
+
+  .print-actions {
+    padding: 20px;
+    display: flex;
+    gap: 12px;
+  }
+  .print-action-btn {
+    flex: 1;
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border);
+    background: var(--white);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all .2s;
+    font-family: inherit;
+  }
+  .print-action-btn.do-print { color: white; border-color: transparent; }
+  .pt-theme .print-action-btn.do-print { background: var(--pt-color); }
+  .ot-theme .print-action-btn.do-print { background: var(--ot-color); }
+  .print-action-btn:hover:not(.do-print) { background: var(--bg); }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .screen.active .home-card { animation: fadeUp .4s ease both; }
+  .screen.active .home-card:nth-child(2) { animation-delay: .08s; }
+
+  /* ===== EXERCISE ANIMATIONS (CSS-based) ===== */
+  .anim-wrapper {
+    width: 100%;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .exercise-svg {
+    max-width: 200px;
+    max-height: 220px;
+  }
+
+  /* Ankle pump anim */
+  @keyframes anklePump {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(25deg); }
+  }
+  @keyframes calfRaise {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-18px); }
+  }
+  @keyframes sitToStand {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(-8deg); }
+  }
+  @keyframes bridgeUp {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-22px); }
+  }
+  @keyframes balanceWobble {
+    0%, 100% { transform: rotate(0deg); }
+    30% { transform: rotate(4deg); }
+    70% { transform: rotate(-4deg); }
+  }
+  @keyframes fingerFlex {
+    0%, 100% { transform: scaleX(1); }
+    50% { transform: scaleX(0.7) scaleY(1.1); }
+  }
+  @keyframes thumbOppose {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(40deg); }
+  }
+  @keyframes handOpen {
+    0%, 100% { transform: scaleX(1); }
+    50% { transform: scaleX(1.15); }
+  }
+  @keyframes shoulderROM {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-60deg); }
+  }
+  @keyframes coinMove {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(30px); }
+  }
+
+  .paused * { animation-play-state: paused !important; }
+
+  /* ===== PROGRESS BAR (animation) ===== */
+  .anim-progress {
+    position: absolute;
+    bottom: 12px;
+    left: 20px;
+    right: 20px;
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .anim-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s;
+  }
+  .pt-theme .anim-progress-fill { background: var(--pt-color); }
+  .ot-theme .anim-progress-fill { background: var(--ot-color); }
+
+  /* Step indicator */
+  .step-indicator {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: rgba(0,0,0,0.08);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-mid);
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #1a1a1a;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (min-width: 600px) {
+    .home-cards { flex-direction: row; max-width: 600px; margin: 0 auto; }
+    .home-card { flex: 1; }
+    .list-body, .settings-panel, .controls, .detail-info { max-width: 600px; margin-left: auto; margin-right: auto; }
+    .detail-anim-area { max-width: 560px; margin-left: auto; margin-right: auto; }
+    .print-sheet, .print-actions { max-width: 600px; margin-left: auto; margin-right: auto; }
+  }
+
+  @media print {
+    .header, .controls, .print-actions, .screen:not(#screen-print) { display: none !important; }
+    #screen-print { display: flex !important; }
+    .print-sheet { margin: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== HOME SCREEN ====== -->
+<div id="screen-home" class="screen active">
+  <div class="home-header">
+    <div class="home-logo">Rehabilitation Support App · Sample</div>
+    <div class="home-title">
+      リハ自主トレ
+      <span>支援アプリ　サンプル版</span>
+    </div>
+  </div>
+  <div class="home-cards">
+    <div class="home-card pt-card" onclick="openList('PT')">
+      <div class="home-card-bg"></div>
+      <span class="home-card-icon">🦵</span>
+      <span class="home-card-abbr">PT</span>
+      <div class="home-card-name">理学療法士 メニュー</div>
+      <div class="home-card-tags">
+        <span class="home-card-tag">外来</span>
+        <span class="home-card-tag">病棟</span>
+        <span class="home-card-tag">退院指導</span>
+        <span class="home-card-tag">自主トレ</span>
+      </div>
+      <div class="home-card-arrow">›</div>
+    </div>
+    <div class="home-card ot-card" onclick="openList('OT')">
+      <div class="home-card-bg"></div>
+      <span class="home-card-icon">✋</span>
+      <span class="home-card-abbr">OT</span>
+      <div class="home-card-name">作業療法士 メニュー</div>
+      <div class="home-card-tags">
+        <span class="home-card-tag">手外科</span>
+        <span class="home-card-tag">ROM訓練</span>
+        <span class="home-card-tag">巧緻動作</span>
+        <span class="home-card-tag">上肢訓練</span>
+      </div>
+      <div class="home-card-arrow">›</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== LIST SCREEN ====== -->
+<div id="screen-list" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="goHome()">←</button>
+    <div class="header-title" id="list-title">PT 種目一覧</div>
+    <span class="header-badge" id="list-badge">PT</span>
+  </div>
+  <div class="list-body" id="list-body">
+    <!-- dynamically generated -->
+  </div>
+  <div class="settings-panel">
+    <div class="selected-count">
+      選択中: <strong id="selected-count">0</strong> 種目
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">回数</span>
+      <div class="settings-options" id="reps-options">
+        <button class="settings-btn active" onclick="setReps(5,this)">5回</button>
+        <button class="settings-btn" onclick="setReps(10,this)">10回</button>
+        <button class="settings-btn" onclick="setReps(15,this)">15回</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">セット数</span>
+      <div class="settings-options" id="sets-options">
+        <button class="settings-btn active" onclick="setSets(1,this)">1セット</button>
+        <button class="settings-btn" onclick="setSets(2,this)">2セット</button>
+        <button class="settings-btn" onclick="setSets(3,this)">3セット</button>
+      </div>
+    </div>
+    <button class="print-btn" onclick="openPrint()">
+      🖨 プリント作成
+    </button>
+  </div>
+</div>
+
+<!-- ====== DETAIL SCREEN ====== -->
+<div id="screen-detail" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="goList()">←</button>
+    <div class="header-title" id="detail-title">足首上下運動</div>
+    <span class="header-badge" id="detail-badge">PT</span>
+  </div>
+  <div class="detail-anim-area" id="anim-area">
+    <div class="anim-wrapper" id="anim-wrapper">
+      <!-- animation rendered here -->
+    </div>
+    <div class="step-indicator" id="step-indicator">動作中</div>
+    <div class="anim-progress">
+      <div class="anim-progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+  <div class="detail-info">
+    <div class="detail-name" id="detail-exercise-name">足首上下運動</div>
+    <div class="detail-reps" id="detail-reps">
+      <span>🔄</span> <span id="detail-reps-text">10回 × 2セット</span>
+    </div>
+    <div class="detail-caution" id="detail-caution">
+      <div class="detail-caution-title">⚠️ 注意点</div>
+      <div id="detail-caution-text">痛みが出る場合は無理せず中止してください。</div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="controls-top">
+      <button class="ctrl-btn primary" id="play-btn" onclick="togglePlay()">
+        <span class="ctrl-icon">▶</span>
+        <span>再生</span>
+      </button>
+      <button class="ctrl-btn" onclick="stopAnim()">
+        <span class="ctrl-icon">⏹</span>
+        <span>停止</span>
+      </button>
+      <button class="ctrl-btn" onclick="openPrint()">
+        <span class="ctrl-icon">🖨</span>
+        <span>印刷</span>
+      </button>
+    </div>
+    <div class="controls-bottom">
+      <button class="speed-btn" id="slow-btn" onclick="setSpeed('slow')">🐢 ゆっくり</button>
+      <button class="speed-btn active" id="normal-btn" onclick="setSpeed('normal')">⏱ 普通</button>
+      <button class="speed-btn" id="fast-btn" onclick="setSpeed('fast')">🐇 速く</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== PRINT SCREEN ====== -->
+<div id="screen-print" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="goList()">←</button>
+    <div class="header-title">プリントプレビュー</div>
+  </div>
+  <div class="print-sheet" id="print-sheet">
+    <div class="print-sheet-header">
+      <div>
+        <div class="print-sheet-title" id="print-type-label">PT 自主トレメニュー</div>
+        <div class="print-sheet-date" id="print-date"></div>
+      </div>
+      <div style="font-size:13px;color:var(--text-light);text-align:right;line-height:1.6;">
+        回数: <strong id="print-reps-label">10回</strong><br>
+        セット: <strong id="print-sets-label">2セット</strong>
+      </div>
+    </div>
+    <div class="print-exercises" id="print-exercises">
+      <!-- dynamic -->
+    </div>
+    <div class="print-footer">
+      ※ QRコードを読み取ると動作確認ができます　／　痛みが出たら無理せず休んでください
+    </div>
+  </div>
+  <div class="print-actions">
+    <button class="print-action-btn" onclick="goList()">← 戻る</button>
+    <button class="print-action-btn do-print" onclick="window.print()">🖨 印刷する</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+const exercises = {
+  PT: [
+    {
+      id: 'ankle', name: '足首上下運動', icon: '🦶',
+      desc: '足首をゆっくり上下させる',
+      caution: '椅子に座って行いましょう。かかとは床につけたまま行います。痛みが出たら中止してください。',
+      anim: 'ankle'
+    },
+    {
+      id: 'calf', name: 'カーフレイズ', icon: '👟',
+      desc: 'つま先立ちでふくらはぎを鍛える',
+      caution: '転倒に注意し、壁や椅子に手を添えて行いましょう。ゆっくり上がってゆっくり下りてください。',
+      anim: 'calf'
+    },
+    {
+      id: 'sitstand', name: '椅子立ち上がり', icon: '🪑',
+      desc: '椅子から立ち上がる動作を繰り返す',
+      caution: 'なるべく手を使わず、太ももの力で立ちましょう。ふらつく場合は手すりを使ってください。',
+      anim: 'sitstand'
+    },
+    {
+      id: 'bridge', name: 'ブリッジ', icon: '🔃',
+      desc: '仰向けでお尻を持ち上げる',
+      caution: '腰が反りすぎないよう注意。お腹に力を入れてゆっくり行いましょう。',
+      anim: 'bridge'
+    },
+    {
+      id: 'balance', name: '片脚立位', icon: '⚖️',
+      desc: '片脚でバランスを保つ練習',
+      caution: '転倒に注意し、必ず近くに壁や椅子を置いて行いましょう。目線は前方に。',
+      anim: 'balance'
+    },
+  ],
+  OT: [
+    {
+      id: 'tendon', name: '腱滑走運動', icon: '✊',
+      desc: '指の腱をスムーズに動かす',
+      caution: '痛みのない範囲で行いましょう。手術後の方は担当OTの指示に従ってください。',
+      anim: 'tendon'
+    },
+    {
+      id: 'thumb', name: '母指対立', icon: '👍',
+      desc: '親指と他の指をつける練習',
+      caution: '各指先と親指をゆっくりつけましょう。ピンチ動作の練習になります。',
+      anim: 'thumb'
+    },
+    {
+      id: 'finger', name: '手指屈曲伸展', icon: '🖐',
+      desc: '指を曲げ伸ばしする基本運動',
+      caution: 'グーパーをゆっくり繰り返します。むくみがある場合は手を心臓より高くしてから行いましょう。',
+      anim: 'finger'
+    },
+    {
+      id: 'shoulder', name: '肩ROM訓練', icon: '💪',
+      desc: '肩の可動域を広げる練習',
+      caution: '痛みが強い角度では無理しないでください。振り子運動から始めると楽に行えます。',
+      anim: 'shoulder'
+    },
+    {
+      id: 'coin', name: 'コイン移動', icon: '🪙',
+      desc: '指先の巧緻性を高める練習',
+      caution: '滑らかに指先でコインを動かしましょう。テーブルの上で行うと安全です。',
+      anim: 'coin'
+    },
+  ]
+};
+
+// ===== STATE =====
+let currentType = 'PT';
+let selectedIds = new Set();
+let reps = 10;
+let sets = 2;
+let currentExercise = null;
+let isPlaying = true;
+let animSpeed = 'normal';
+let progressInterval = null;
+let progressVal = 0;
+
+// ===== NAVIGATION =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function applyTheme(type) {
+  document.body.classList.remove('pt-theme', 'ot-theme');
+  document.body.classList.add(type.toLowerCase() + '-theme');
+}
+
+function goHome() { showScreen('home'); }
+function goList() { showScreen('list'); }
+
+function openList(type) {
+  currentType = type;
+  applyTheme(type);
+  document.getElementById('list-title').textContent = type + ' 種目一覧';
+  document.getElementById('list-badge').textContent = type;
+  document.getElementById('list-badge').className = 'header-badge badge-' + type.toLowerCase();
+  selectedIds = new Set();
+  renderList();
+  showScreen('list');
+}
+
+// ===== LIST =====
+function renderList() {
+  const exList = exercises[currentType];
+  const body = document.getElementById('list-body');
+  body.innerHTML = '<div class="section-label">種目を選択してください</div><div class="exercise-list">' +
+    exList.map(ex => `
+      <div class="exercise-item ${selectedIds.has(ex.id) ? 'checked' : ''}" id="item-${ex.id}">
+        <div class="exercise-check ${selectedIds.has(ex.id) ? 'checked-bg' : ''}" onclick="toggleCheck('${ex.id}',event)">
+          ${selectedIds.has(ex.id) ? '✓' : ''}
+        </div>
+        <div class="exercise-icon-box">${ex.icon}</div>
+        <div class="exercise-info" onclick="openDetail('${ex.id}')">
+          <div class="exercise-name">${ex.name}</div>
+          <div class="exercise-desc">${ex.desc}</div>
+        </div>
+        <div class="exercise-go" onclick="openDetail('${ex.id}')">›</div>
+      </div>
+    `).join('') + '</div>';
+  updateCount();
+}
+
+function toggleCheck(id, e) {
+  e.stopPropagation();
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  renderList();
+  showToast(selectedIds.has(id) ? '✓ 選択しました' : '選択を解除しました');
+}
+
+function updateCount() {
+  document.getElementById('selected-count').textContent = selectedIds.size;
+}
+
+function setReps(n, btn) {
+  reps = n;
+  document.querySelectorAll('#reps-options .settings-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setSets(n, btn) {
+  sets = n;
+  document.querySelectorAll('#sets-options .settings-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ===== DETAIL =====
+function openDetail(id) {
+  const exList = exercises[currentType];
+  currentExercise = exList.find(e => e.id === id);
+  document.getElementById('detail-title').textContent = currentExercise.name;
+  document.getElementById('detail-badge').textContent = currentType;
+  document.getElementById('detail-badge').className = 'header-badge badge-' + currentType.toLowerCase();
+  document.getElementById('detail-exercise-name').textContent = currentExercise.name;
+  document.getElementById('detail-reps-text').textContent = reps + '回 × ' + sets + 'セット';
+  document.getElementById('detail-caution-text').textContent = currentExercise.caution;
+
+  renderAnimation(currentExercise.anim);
+  startProgress();
+  isPlaying = true;
+  updatePlayBtn();
+
+  showScreen('detail');
+}
+
+// ===== ANIMATION RENDERING =====
+const animDefs = {
+  ankle: {
+    label: '足首を上下に動かす',
+    svg: `<svg class="exercise-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <!-- Chair -->
+      <rect x="20" y="130" width="130" height="8" rx="3" fill="#ccc"/>
+      <rect x="25" y="138" width="8" height="50" rx="3" fill="#bbb"/>
+      <rect x="137" y="138" width="8" height="50" rx="3" fill="#bbb"/>
+      <!-- Body -->
+      <circle cx="100" cy="50" r="22" fill="#f5a623" stroke="#e8940f" stroke-width="2"/>
+      <rect x="82" y="72" width="36" height="52" rx="10" fill="#3d7eba"/>
+      <!-- Legs -->
+      <rect x="88" y="120" width="14" height="36" rx="6" fill="#3d7eba"/>
+      <rect x="108" y="120" width="14" height="36" rx="6" fill="#3d7eba"/>
+      <!-- Animated foot -->
+      <g style="transform-origin: 95px 156px; animation: anklePump 2s ease-in-out infinite;">
+        <ellipse cx="95" cy="168" rx="16" ry="8" fill="#e8940f"/>
+      </g>
+      <g style="transform-origin: 115px 156px; animation: anklePump 2s ease-in-out infinite 0.1s;">
+        <ellipse cx="115" cy="168" rx="16" ry="8" fill="#e8940f"/>
+      </g>
+      <!-- Arrow guide -->
+      <text x="160" y="155" font-size="22" fill="#e84855">↕</text>
+    </svg>`
+  },
+  calf: {
+    label: 'かかとを上げる',
+    svg: `<svg class="exercise-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="195" width="180" height="8" rx="3" fill="#ccc"/>
+      <circle cx="100" cy="45" r="22" fill="#f5a623" stroke="#e8940f" stroke-width="2"/>
+      <rect x="82" y="67" width="36" height="65" rx="10" fill="#3d7eba"/>
+      <!-- Legs with raise animation -->
+      <g style="animation: calfRaise 1.8s ease-in-out infinite;">
+        <rect x="86" y="128" width="14" height="48" rx="6" fill="#3d7eba"/>
+        <rect x="106" y="128" width="14" height="48" rx="6" fill="#3d7eba"/>
+        <ellipse cx="93" cy="184" rx="18" ry="9" fill="#e8940f"/>
+        <ellipse cx="113" cy="184" rx="18" ry="9" fill="#e8940f"/>
+      </g>
+      <text x="155" y="170" font-size="22" fill="#e84855">↑</text>
+    </svg>`
+  },
+  sitstand: {
+    label: '立ち上がる・座る',
+    svg: `<svg class="exercise-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="145" width="130" height="8" rx="3" fill="#ccc"/>
+      <rect x="25" y="153" width="8" height="42" rx="3" fill="#bbb"/>
+      <rect x="137" y="153" width="8" height="42" rx="3" fill="#bbb"/>
+      <g style="animation: sitToStand 2.4s ease-in-out infinite; transform-origin: 100px 145px;">
+        <circle cx="100" cy="42" r="22" fill="#f5a623" stroke="#e8940f" stroke-width="2"/>
+        <rect x="82" y="64" width="36" height="56" rx="10" fill="#3d7eba"/>
+        <rect x="86" y="116" width="14" height="34" rx="6" fill="#3d7eba"/>
+        <rect x="106" y="116" width="14" height="34" rx="6" fill="#3d7eba"/>
+        <ellipse cx="93" cy="158" rx="16" ry="8" fill="#e8940f"/>
+        <ellipse cx="113" cy="158" rx="16" ry="8" fill="#e8940f"/>
+      </g>
+      <text x="155" y="100" font-size="22" fill="#e84855">↕</text>
+    </svg>`
+  },
+  bridge: {
+    label: 'お尻を持ち上げる',
+    svg: `<svg class="exercise-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="195" width="180" height="8" rx="3" fill="#ccc"/>
+      <!-- Lying figure -->
+      <!-- Head -->
+      <circle cx="170" cy="165" r="18" fill="#f5a623" stroke="#e8940f" stroke-width="2"/>
+      <!-- Torso with bridge animation -->
+      <g style="animation: bridgeUp 2s ease-in-out infinite; transform-origin: 100px 175px;">
+        <rect x="90" y="150" width="70" height="30" rx="10" fill="#3d7eba"/>
+      </g>
+      <!-- Legs static base -->
+      <rect x="30" y="175" width="68" height="18" rx="8" fill="#3d7eba"/>
+      <ellipse cx="25" cy="184" rx="16" ry="10" fill="#e8940f"/>
+      <!-- Arrow -->
+      <text x="88" y="130" font-size="22" fill="#e84855">↑</text>
+    </svg>`
+  },
+  balance: {
+    label: 'バランスを保つ',
+    svg: `<svg class="exercise-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="205" width="180" height="8" rx="3" fill="#ccc"/>
+      <g style="animation: balanceWobble 2.2s ease-in-out infinite; transform-origin: 105px 200px;">
+        <circle cx="105" cy="36" r="22" fill="#f5a623" stroke="#e8940f" stroke-width="2"/>
+        <rect x="87" y="58" width="36" height="58" rx="10" fill="#3d7eba"/>
+        <rect x="91" y="112" width="14" height="72" rx="6" fill="#3d7eba"/>
+        <ellipse cx="98" cy="192" rx="16" ry="9" fill="#e8940f"/>
+        <!-- Raised leg -->
+        <rect x="107" y="115" width="14" height="44" rx="6" fill="#3d7eba" transform="rotate(20, 114, 135)"/>
+      </g>
+      <text x="20" y="120" font-size="18" fill="#e84855">⚖</text>
+    </svg>`
+  },
+  tendon: {
+    label: '指を曲げ伸ばし',
+    svg: `<svg class="exercise-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <g style="animation: fingerFlex 1.6s ease-in-out infinite; transform-origin: 100px 140px;">
+        <!-- Palm -->
+        <rect x="70" y="120" width="60" height="70" rx="16" fill="#f5c8a0"/>
+        <!-- Fingers -->
+        <rect x="73" y="90" width="12" height="38" rx="6" fill="#f5a623"/>
+        <rect x="88" y="80" width="12" height="46" rx="6" fill="#f5a623"/>
+        <rect x="103" y="82" width="12" height="44" rx="6" fill="#f5a623"/>
+        <rect x="118" y="90" width="10" height="36" rx="5" fill="#f5a623"/>
+        <!-- Thumb -->
+        <rect x="55" y="130" width="20" height="10" rx="5" fill="#f5a623" transform="rotate(-30, 65, 135)"/>
+      </g>
+      <text x="150" y="130" font-size="22" fill="#2a9d5c">✊</text>
+    </svg>`
+  },
+  thumb: {
+    label: '親指を各指にタッチ',
+    svg: `<svg class="exercise-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <!-- Palm -->
+      <rect x="75" y="125" width="55" height="65" rx="14" fill="#f5c8a0"/>
+      <!-- Fingers -->
+      <rect x="78" y="95" width="11" height="36" rx="5" fill="#f5a623"/>
+      <rect x="92" y="85" width="11" height="44" rx="5" fill="#f5a623"/>
+      <rect x="106" y="87" width="11" height="42" rx="5" fill="#f5a623"/>
+      <rect x="120" y="95" width="10" height="34" rx="5" fill="#f5a623"/>
+      <!-- Animated thumb -->
+      <g style="animation: thumbOppose 1.8s ease-in-out infinite; transform-origin: 75px 150px;">
+        <rect x="50" y="140" width="30" height="12" rx="6" fill="#f5a623"/>
+        <circle cx="48" cy="146" r="8" fill="#e8940f"/>
+      </g>
+      <text x="28" y="100" font-size="18" fill="#2a9d5c">👍</text>
+    </svg>`
+  },
+  finger: {
+    label: 'グーパーを繰り返す',
+    svg: `<svg class="exercise-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <g style="animation: handOpen 1.5s ease-in-out infinite; transform-origin: 100px 150px;">
+        <rect x="72" y="128" width="58" height="62" rx="14" fill="#f5c8a0"/>
+        <rect x="75" y="95" width="11" height="38" rx="5" fill="#f5a623"/>
+        <rect x="89" y="84" width="11" height="50" rx="5" fill="#f5a623"/>
+        <rect x="103" y="86" width="11" height="48" rx="5" fill="#f5a623"/>
+        <rect x="117" y="93" width="10" height="40" rx="5" fill="#f5a623"/>
+        <rect x="55" y="140" width="22" height="11" rx="5" fill="#f5a623" transform="rotate(-25, 66, 145)"/>
+      </g>
+      <text x="150" y="165" font-size="28" fill="#2a9d5c">✋</text>
+    </svg>`
+  },
+  shoulder: {
+    label: '腕を前に持ち上げる',
+    svg: `<svg class="exercise-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="50" r="22" fill="#f5a623" stroke="#e8940f" stroke-width="2"/>
+      <rect x="82" y="72" width="36" height="60" rx="10" fill="#3d7eba"/>
+      <!-- Legs -->
+      <rect x="86" y="128" width="14" height="52" rx="6" fill="#3d7eba"/>
+      <rect x="106" y="128" width="14" height="52" rx="6" fill="#3d7eba"/>
+      <ellipse cx="93" cy="186" rx="14" ry="8" fill="#e8940f"/>
+      <ellipse cx="113" cy="186" rx="14" ry="8" fill="#e8940f"/>
+      <!-- Animated arm -->
+      <g style="animation: shoulderROM 2.5s ease-in-out infinite; transform-origin: 82px 90px;">
+        <rect x="46" y="82" width="38" height="12" rx="6" fill="#3d7eba"/>
+        <circle cx="44" cy="88" r="8" fill="#e8940f"/>
+      </g>
+      <text x="28" y="55" font-size="18" fill="#2a9d5c">⬆</text>
+    </svg>`
+  },
+  coin: {
+    label: 'コインを指で移動させる',
+    svg: `<svg class="exercise-svg" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+      <!-- Table -->
+      <rect x="20" y="160" width="160" height="10" rx="4" fill="#c9a96e"/>
+      <rect x="30" y="170" width="12" height="44" rx="4" fill="#b8924f"/>
+      <rect x="158" y="170" width="12" height="44" rx="4" fill="#b8924f"/>
+      <!-- Hand over table -->
+      <rect x="68" y="120" width="58" height="44" rx="14" fill="#f5c8a0"/>
+      <rect x="72" y="92" width="10" height="34" rx="5" fill="#f5a623"/>
+      <rect x="85" y="82" width="10" height="44" rx="5" fill="#f5a623"/>
+      <rect x="98" y="84" width="10" height="42" rx="5" fill="#f5a623"/>
+      <rect x="111" y="92" width="9" height="34" rx="5" fill="#f5a623"/>
+      <!-- Animated coin -->
+      <g style="animation: coinMove 1.8s ease-in-out infinite; transform-origin: 80px 155px;">
+        <circle cx="80" cy="155" r="12" fill="#f5c842" stroke="#d4a017" stroke-width="2"/>
+        <text x="74" y="160" font-size="12" font-weight="bold" fill="#d4a017">¥</text>
+      </g>
+      <text x="148" y="148" font-size="22" fill="#2a9d5c">→</text>
+    </svg>`
+  }
+};
+
+function renderAnimation(animId) {
+  const def = animDefs[animId] || animDefs['ankle'];
+  const wrapper = document.getElementById('anim-wrapper');
+  wrapper.innerHTML = def.svg;
+  document.getElementById('step-indicator').textContent = def.label;
+}
+
+// ===== PLAYBACK =====
+function togglePlay() {
+  isPlaying = !isPlaying;
+  const area = document.getElementById('anim-wrapper');
+  if (isPlaying) {
+    area.classList.remove('paused');
+    startProgress();
+  } else {
+    area.classList.add('paused');
+    clearInterval(progressInterval);
+  }
+  updatePlayBtn();
+}
+
+function stopAnim() {
+  isPlaying = false;
+  const area = document.getElementById('anim-wrapper');
+  area.classList.add('paused');
+  clearInterval(progressInterval);
+  progressVal = 0;
+  document.getElementById('progress-fill').style.width = '0%';
+  updatePlayBtn();
+}
+
+function updatePlayBtn() {
+  const btn = document.getElementById('play-btn');
+  if (isPlaying) {
+    btn.innerHTML = '<span class="ctrl-icon">⏸</span><span>一時停止</span>';
+  } else {
+    btn.innerHTML = '<span class="ctrl-icon">▶</span><span>再生</span>';
+  }
+}
+
+function startProgress() {
+  clearInterval(progressInterval);
+  const speeds = { slow: 80, normal: 40, fast: 20 };
+  const step = speeds[animSpeed] || 40;
+  progressInterval = setInterval(() => {
+    progressVal = (progressVal + 1) % 101;
+    document.getElementById('progress-fill').style.width = progressVal + '%';
+  }, step);
+}
+
+function setSpeed(speed) {
+  animSpeed = speed;
+  document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(speed + '-btn').classList.add('active');
+
+  // Update CSS animation speed
+  const svgs = document.querySelectorAll('#anim-wrapper *');
+  const durations = { slow: '4s', normal: '2s', fast: '0.8s' };
+  svgs.forEach(el => {
+    if (el.style.animation) {
+      el.style.animationDuration = durations[speed];
+    }
+  });
+
+  if (isPlaying) startProgress();
+}
+
+// ===== PRINT =====
+function openPrint() {
+  if (selectedIds.size === 0) {
+    showToast('⚠️ 種目を選択してください');
+    return;
+  }
+
+  document.getElementById('print-type-label').textContent = currentType + ' 自主トレメニュー';
+  document.getElementById('print-date').textContent = new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('print-reps-label').textContent = reps + '回';
+  document.getElementById('print-sets-label').textContent = sets + 'セット';
+
+  const exList = exercises[currentType].filter(e => selectedIds.has(e.id));
+  const colorClass = currentType === 'PT' ? 'print-ex-pt' : 'print-ex-ot';
+  const repsColor = currentType === 'PT' ? 'print-ex-reps-pt' : 'print-ex-reps-ot';
+
+  document.getElementById('print-exercises').innerHTML = exList.map(ex => `
+    <div class="print-ex">
+      <div class="print-ex-icon ${colorClass}">${ex.icon}</div>
+      <div class="print-ex-body">
+        <div class="print-ex-name">${ex.name}</div>
+        <div class="print-ex-reps ${repsColor}">${reps}回 × ${sets}セット</div>
+        <div class="print-ex-note">${ex.caution.slice(0, 50)}…</div>
+      </div>
+      <div class="print-ex-qr">
+        <div class="qr-mock">QR<br>コード</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:3px;">動作確認</div>
+      </div>
+    </div>
+  `).join('');
+
+  showScreen('print');
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== INIT =====
+document.getElementById('print-date').textContent =
+  new Date().toLocaleDateString('ja-JP', {year:'numeric', month:'long', day:'numeric'});
+</script>
+</body>
+</html>
