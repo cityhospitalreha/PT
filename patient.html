@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自主訓練メニュー</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563EB">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="自主">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --bg: #F7F8FA;
+  --surface: #fff;
+  --border: #E4E7EC;
+  --text: #1A1D23;
+  --sub: #6B7280;
+  --accent: #2563EB;
+  --accent-bg: #EFF6FF;
+  --green: #16A34A;
+  --green-bg: #F0FDF4;
+  --r: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+  background: var(--bg); color: var(--text);
+}
+
+/* ヘッダー */
+header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.h-title { font-size: 18px; font-weight: 700; }
+.print-btn {
+  background: var(--accent); color: #fff;
+  font-size: 14px; font-weight: 600; padding: 9px 18px;
+  border: none; border-radius: 999px; cursor: pointer;
+}
+.print-btn:hover { background: #1D4ED8; }
+
+.wrap { max-width: 700px; margin: 0 auto; padding: 20px 16px 40px; }
+
+/* 日付 */
+.meta { font-size: 14px; color: var(--sub); margin-bottom: 20px; }
+
+/* 訓練カード（患者向け：大きく・シンプル） */
+.ex-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); margin-bottom: 20px;
+  overflow: hidden; page-break-inside: avoid;
+}
+
+.ex-card-head {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.ex-big-icon { font-size: 42px; line-height: 1; }
+.ex-info { flex: 1; }
+.ex-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.ex-num {
+  font-size: 17px; font-weight: 600; color: var(--accent);
+  background: var(--accent-bg); display: inline-block;
+  padding: 4px 14px; border-radius: 999px;
+}
+
+/* GIFエリア */
+.ex-media {
+  background: #F1F5F9;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 180px; border-bottom: 1px solid var(--border);
+}
+.ex-media img { max-width: 100%; max-height: 240px; object-fit: contain; }
+.media-ph { text-align: center; color: var(--sub); padding: 20px; }
+.media-ph .ico { font-size: 50px; margin-bottom: 8px; }
+.media-ph p { font-size: 13px; }
+
+/* メモ・注意 */
+.ex-memo {
+  padding: 14px 20px;
+  font-size: 16px; line-height: 1.8; color: var(--text);
+  border-bottom: 1px solid var(--border);
+  background: #FFFBEB;
+}
+.ex-memo-label { font-size: 12px; color: #92400E; font-weight: 600; margin-bottom: 4px; }
+
+/* QRエリア */
+.ex-qr {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 20px;
+}
+.ex-qr-desc { font-size: 14px; color: var(--sub); line-height: 1.7; }
+
+/* 印刷用スタイル */
+@media print {
+  header { display: none; }
+  body { background: #fff; font-size: 14px; }
+  .wrap { max-width: 100%; padding: 10px; }
+  .meta { margin-bottom: 12px; }
+  .ex-card { border: 1px solid #ccc; margin-bottom: 14px; page-break-inside: avoid; }
+  .ex-name { font-size: 18px; }
+  .ex-num { font-size: 15px; }
+  .ex-big-icon { font-size: 32px; }
+  .ex-media { min-height: 140px; }
+  .media-ph .ico { font-size: 36px; }
+  .print-note { display: block !important; }
+}
+.print-note {
+  display: none;
+  text-align: center; font-size: 12px; color: var(--sub);
+  margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--border);
+}
+
+/* エラー */
+.error-box {
+  text-align: center; padding: 80px 20px; color: var(--sub);
+}
+.error-box .ico { font-size: 50px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-title">🏥 自主訓練メニュー</div>
+  <button class="print-btn" onclick="window.print()">🖨️ 印刷する</button>
+</header>
+
+<div class="wrap" id="wrap">
+  <div class="meta" id="dateMeta"></div>
+  <div id="content"></div>
+  <div class="print-note">
+    ※ QRコードをスマートフォンで読み込むと、動作の確認ができます。<br>
+    わからないことは担当の療法士にお尋ねください。
+  </div>
+</div>
+
+<script>
+// 訓練マスタ（index.htmlと同じ）
+const EX = [
+  { id:1,  icon:"🦵", name:"大腿四頭筋トレーニング", detail:"ex/quad.html" },
+  { id:2,  icon:"🏋️", name:"ブリッジ運動",           detail:"ex/bridge.html" },
+  { id:3,  icon:"🧘", name:"ハムストリングスストレッチ", detail:"ex/hamstring.html" },
+  { id:4,  icon:"🤸", name:"体幹回旋ストレッチ",       detail:"ex/trunk.html" },
+  { id:5,  icon:"💪", name:"肩関節外転運動",            detail:"ex/shoulder.html" },
+  { id:6,  icon:"🙆", name:"肩甲骨寄せ運動",            detail:"ex/scapula.html" },
+  { id:7,  icon:"✋", name:"握力訓練",                  detail:"ex/grip.html" },
+  { id:8,  icon:"🪑", name:"端坐位バランス練習",         detail:"ex/balance_sit.html" },
+  { id:9,  icon:"🧍", name:"立位バランス練習",           detail:"ex/balance_stand.html" },
+  { id:10, icon:"🦶", name:"カーフレイズ",              detail:"ex/calf.html" },
+  { id:11, icon:"🚶", name:"歩行練習",                  detail:"ex/walk.html" },
+  { id:12, icon:"🪜", name:"階段昇降練習",              detail:"ex/stairs.html" },
+  { id:13, icon:"🚲", name:"エルゴメーター",            detail:"ex/ergometer.html" },
+];
+
+// URLパラメーターをパース
+function parsePlan() {
+  const params = new URLSearchParams(window.location.search);
+  const plan = params.get('plan');
+  if (!plan) return [];
+  return decodeURIComponent(plan).split('|').map(seg => {
+    const p = new URLSearchParams(seg);
+    return {
+      id:   parseInt(p.get('id')),
+      reps: p.get('reps') || '',
+      sets: p.get('sets') || '',
+      sec:  p.get('sec')  || '',
+    };
+  });
+}
+
+function numLabel(s) {
+  const parts = [];
+  if (s.reps) parts.push(`<strong>${s.reps}</strong>回`);
+  if (s.sets) parts.push(`<strong>${s.sets}</strong>セット`);
+  if (s.sec)  parts.push(`<strong>${s.sec}</strong>秒キープ`);
+  if (!parts.length) return '';
+  return parts.join(' × ');
+}
+
+function buildCards(items) {
+  const wrap = document.getElementById('content');
+  items.forEach((item, idx) => {
+    const ex = EX.find(e => e.id === item.id);
+    if (!ex) return;
+
+    const num = numLabel(item);
+    const detailUrl = new URL(ex.detail, window.location.href).href;
+
+    const card = document.createElement('div');
+    card.className = 'ex-card';
+    card.innerHTML = `
+      <div class="ex-card-head">
+        <div class="ex-big-icon">${ex.icon}</div>
+        <div class="ex-info">
+          <div class="ex-name">${ex.name}</div>
+          ${num ? `<div class="ex-num">${num}</div>` : ''}
+        </div>
+      </div>
+      <div class="ex-media">
+        <div class="media-ph">
+          <div class="ico">${ex.icon}</div>
+          <p>GIF・イラストをここに配置</p>
+          <p style="font-size:11px;margin-top:4px;">${ex.detail}</p>
+        </div>
+      </div>
+      ${item.memo ? '' : ''}
+      <div class="ex-qr">
+        <div id="qr-${idx}" style="flex-shrink:0"></div>
+        <div class="ex-qr-desc">
+          QRコードをスマートフォンで読み込むと、<br>
+          動作の確認ができます。
+        </div>
+      </div>
+    `;
+    wrap.appendChild(card);
+
+    // QR生成
+    new QRCode(document.getElementById(`qr-${idx}`), {
+      text: detailUrl,
+      width: 90, height: 90,
+      colorDark: "#1A1D23", colorLight: "#ffffff",
+    });
+  });
+}
+
+// 実行
+const items = parsePlan();
+document.getElementById('dateMeta').textContent =
+  '作成日：' + new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' });
+
+if (!items.length) {
+  document.getElementById('content').innerHTML = `
+    <div class="error-box">
+      <div class="ico">📋</div>
+      <p>訓練メニューが設定されていません。<br>セラピスト画面から訓練を選択してください。</p>
+    </div>`;
+} else {
+  buildCards(items);
+}
+</script>
+</body>
+</html>

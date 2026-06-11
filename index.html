@@ -3,8 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>訓練メニューアプリ デモ</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<title>訓練メニュー作成 – セラピスト</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563EB">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="自主">
 <style>
 :root {
   --bg: #F7F8FA;
@@ -24,332 +29,307 @@
   --rs: 8px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system,'Hiragino Sans','Yu Gothic',sans-serif; background: var(--bg); color: var(--text); }
+body { font-family: -apple-system, 'Hiragino Sans', 'Yu Gothic', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; }
 
-/* ===== 共通ヘッダー ===== */
 header {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 13px 20px; display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 200;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
 }
-.h-left { display: flex; align-items: center; gap: 10px; }
-.h-title { font-size: 16px; font-weight: 700; }
-.h-badge {
-  font-size: 12px; background: var(--accent); color: #fff;
-  padding: 3px 10px; border-radius: 999px; display: none;
+.header-title { font-size: 17px; font-weight: 600; }
+.header-badge {
+  font-size: 13px; background: var(--accent); color: #fff;
+  padding: 3px 12px; border-radius: 999px; display: none;
 }
-.h-badge.on { display: inline-block; }
-.h-btn {
-  font-size: 13px; font-weight: 600; padding: 8px 16px;
-  border-radius: 999px; border: none; cursor: pointer;
-}
-.h-btn-go { background: var(--accent); color: #fff; display: none; }
-.h-btn-go.on { display: inline-block; }
-.h-btn-back { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+.header-badge.on { display: inline-block; }
 
-/* ===== 画面切替 ===== */
-.screen { display: none; }
-.screen.active { display: block; }
+.wrap { max-width: 860px; margin: 0 auto; padding: 20px 16px 80px; }
 
-/* ===== セラピスト画面 ===== */
-.wrap { max-width: 860px; margin: 0 auto; padding: 20px 16px 100px; }
-
+/* フィルター */
 .filter-box {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r); padding: 14px 16px; margin-bottom: 14px;
+  border-radius: var(--r); padding: 16px; margin-bottom: 16px;
 }
-.filter-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.flabel { font-size: 11px; font-weight: 600; color: var(--sub); letter-spacing:.05em; text-transform:uppercase; }
+.filter-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.filter-label { font-size: 12px; font-weight: 600; color: var(--sub); letter-spacing:.05em; text-transform: uppercase; }
 .clear-link { font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; }
-.frow { margin-bottom: 8px; }
-.frow:last-child { margin-bottom: 0; }
-.fname { font-size: 12px; color: var(--sub); margin-bottom: 5px; }
-.pills { display: flex; flex-wrap: wrap; gap: 5px; }
-.pill {
-  font-size: 13px; padding: 5px 12px; border-radius: 999px;
-  border: 1.5px solid var(--border); background: var(--surface);
-  color: var(--sub); cursor: pointer; user-select: none; transition: all .1s;
-}
-.pill.ap { background:var(--accent-bg); color:var(--accent); border-color:var(--accent); font-weight:500; }
-.pill.at { background:var(--green-bg); color:var(--green); border-color:var(--green); font-weight:500; }
-.pill.ab { background:var(--orange-bg); color:var(--orange); border-color:var(--orange); font-weight:500; }
-.pill.ac { background:var(--pink-bg); color:var(--pink); border-color:var(--pink); font-weight:500; }
+.clear-link:hover { text-decoration: underline; }
 
-.rhead { display: flex; align-items: center; margin-bottom: 10px; }
+.frow { margin-bottom: 10px; }
+.frow:last-child { margin-bottom: 0; }
+.fname { font-size: 12px; color: var(--sub); margin-bottom: 6px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill {
+  font-size: 13px; padding: 5px 13px; border-radius: 999px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--sub); cursor: pointer; user-select: none; transition: all .12s;
+}
+.pill:hover { border-color: #9CA3AF; color: var(--text); }
+.pill.ap { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); font-weight: 500; }
+.pill.at { background: var(--green-bg); color: var(--green); border-color: var(--green); font-weight: 500; }
+.pill.ab { background: var(--orange-bg); color: var(--orange); border-color: var(--orange); font-weight: 500; }
+.pill.ac { background: var(--pink-bg); color: var(--pink); border-color: var(--pink); font-weight: 500; }
+
+/* 結果ヘッダー */
+.rhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .rcount { font-size: 13px; color: var(--sub); }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px,1fr)); gap: 10px; }
+/* カードグリッド */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
 
 .ecard {
   background: var(--surface); border: 1.5px solid var(--border);
   border-radius: var(--r); padding: 14px; cursor: pointer; transition: all .12s;
 }
-.ecard:hover { border-color: #9CA3AF; }
+.ecard:hover { border-color: #9CA3AF; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
 .ecard.sel { border-color: var(--accent); background: var(--accent-bg); }
-.ecard-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
-.eicon { font-size: 28px; line-height: 1; }
+
+.ecard-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.ecard-icon { font-size: 28px; line-height: 1; }
 .chk {
   width: 22px; height: 22px; border-radius: 50%;
   border: 2px solid var(--border); background: var(--surface);
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; transition: all .1s;
+  font-size: 12px; flex-shrink: 0; transition: all .12s;
 }
 .ecard.sel .chk { background: var(--accent); border-color: var(--accent); color: #fff; }
-.ename { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-.etags { display: flex; flex-wrap: wrap; gap: 4px; }
-.tag { font-size: 10px; padding: 2px 7px; border-radius: 999px; font-weight: 500; }
-.tp { background:var(--accent-bg); color:var(--accent); }
-.tt { background:var(--green-bg); color:var(--green); }
-.tb { background:var(--orange-bg); color:var(--orange); }
-.tc { background:var(--pink-bg); color:var(--pink); }
 
-/* 選択済みリスト */
-.sel-list { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:12px 14px; margin-bottom:14px; display:none; }
-.sel-list.on { display:block; }
-.sel-title { font-size:11px; font-weight:600; color:var(--sub); letter-spacing:.05em; text-transform:uppercase; margin-bottom:8px; }
-.sel-item { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); font-size:13px; }
-.sel-item:last-child { border-bottom:none; }
-.sicon { font-size:18px; }
-.sname { flex:1; font-weight:500; }
-.sinfo { font-size:12px; color:var(--sub); text-align:right; }
-.edit-btn { font-size:11px; color:var(--accent); border:1px solid var(--accent); background:none; border-radius:6px; padding:2px 8px; cursor:pointer; }
+.ename { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.etags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.tag {
+  font-size: 10px; padding: 2px 7px; border-radius: 999px; font-weight: 500;
+}
+.tp { background: var(--accent-bg); color: var(--accent); }
+.tt { background: var(--green-bg); color: var(--green); }
+.tb { background: var(--orange-bg); color: var(--orange); }
+.tc { background: var(--pink-bg); color: var(--pink); }
 
-/* 設定パネル */
+/* 設定パネル（モーダル風） */
 .cfg-panel {
-  position: fixed; bottom:0; left:0; right:0;
-  background: var(--surface); border-top: 2px solid var(--border);
-  padding: 16px 20px 28px; z-index: 300;
-  transform: translateY(100%); transition: transform .2s ease;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 16px 20px 28px; z-index: 200;
+  transform: translateY(100%); transition: transform .22s ease;
+  max-width: 860px; margin: 0 auto;
 }
 .cfg-panel.open { transform: translateY(0); }
-.cfg-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.cfg-name { font-size:15px; font-weight:700; }
-.cfg-close { background:none; border:none; font-size:24px; cursor:pointer; color:var(--sub); line-height:1; }
+
+.cfg-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.cfg-title { font-size: 15px; font-weight: 600; }
+.cfg-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--sub); line-height: 1; }
 
 .cfg-row { margin-bottom: 14px; }
-.cfg-lbl { font-size:12px; font-weight:600; color:var(--sub); margin-bottom:7px; }
-.chips { display:flex; flex-wrap:wrap; gap:7px; }
+.cfg-label { font-size: 13px; font-weight: 600; color: var(--sub); margin-bottom: 8px; }
+.cfg-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  font-size:14px; padding:7px 15px; border-radius:999px;
-  border:1.5px solid var(--border); background:var(--bg);
-  color:var(--text); cursor:pointer; user-select:none; transition:all .1s;
+  font-size: 15px; padding: 8px 16px; border-radius: 999px;
+  border: 1.5px solid var(--border); background: var(--bg);
+  color: var(--text); cursor: pointer; user-select: none; transition: all .12s;
 }
-.chip.chosen { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
+.chip:hover { border-color: #9CA3AF; }
+.chip.chosen { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
 
-.save-btn {
-  width:100%; margin-top:12px; padding:13px;
-  background:var(--accent); color:#fff; border:none;
-  border-radius:var(--rs); font-size:15px; font-weight:700; cursor:pointer;
+/* 患者画面ボタン */
+.go-btn {
+  position: fixed; bottom: 20px; right: 20px; z-index: 300;
+  background: var(--accent); color: #fff;
+  font-size: 15px; font-weight: 600; padding: 13px 22px;
+  border-radius: 999px; border: none; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37,99,235,.35);
+  display: none; align-items: center; gap: 8px;
+  transition: background .12s;
 }
+.go-btn.on { display: flex; }
+.go-btn:hover { background: #1D4ED8; }
 
-.empty { text-align:center; padding:50px 20px; color:var(--sub); font-size:14px; grid-column:1/-1; }
-.empty-ico { font-size:36px; margin-bottom:10px; }
+.empty { text-align: center; padding: 60px 20px; color: var(--sub); font-size: 14px; grid-column: 1/-1; }
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
 
-/* ===== 患者画面 ===== */
-.p-wrap { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
-.p-meta { font-size: 14px; color: var(--sub); margin-bottom: 22px; }
-
-.ex-card {
-  background: var(--surface); border: 1.5px solid var(--border);
-  border-radius: 14px; margin-bottom: 24px; overflow: hidden;
+/* 選択済みリスト */
+.sel-list {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px 16px; margin-bottom: 16px; display: none;
 }
-.ex-head {
-  display:flex; align-items:center; gap:16px;
-  padding:20px 20px 16px; border-bottom:1px solid var(--border);
+.sel-list.on { display: block; }
+.sel-list-title { font-size: 12px; font-weight: 600; color: var(--sub); letter-spacing:.05em; text-transform:uppercase; margin-bottom: 10px; }
+.sel-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px;
 }
-.ex-bigicon { font-size: 52px; line-height: 1; }
-.ex-exname { font-size: 22px; font-weight: 700; margin-bottom: 8px; line-height: 1.3; }
-.ex-nums { display:flex; flex-wrap:wrap; gap:6px; }
-.ex-num {
-  font-size:16px; font-weight:700; color:var(--accent);
-  background:var(--accent-bg); padding:5px 16px; border-radius:999px;
-}
-.ex-media {
-  background:#EEF2F7;
-  display:flex; align-items:center; justify-content:center;
-  min-height:190px; border-bottom:1px solid var(--border);
-}
-.ph { text-align:center; color:#9CA3AF; padding:20px; }
-.ph-ico { font-size:60px; margin-bottom:8px; display:block; }
-.ph-txt { font-size:13px; }
-.ex-qr {
-  display:flex; align-items:center; gap:18px;
-  padding:16px 20px; background:var(--bg);
-}
-.qr-desc { font-size:14px; color:var(--sub); line-height:1.8; }
-.qr-desc strong { color:var(--text); }
-
-@media print {
-  header, .h-btn-back { display:none !important; }
-  body { background:#fff; }
-  .p-wrap { max-width:100%; padding:8px; }
-  .ex-card { border:1px solid #ccc; margin-bottom:14px; break-inside:avoid; }
-  .ex-bigicon { font-size:36px; }
-  .ex-exname { font-size:18px; }
-  .ex-num { font-size:13px; }
-  .ex-media { min-height:140px; }
-  .ph-ico { font-size:44px; }
-  .print-footer { display:block !important; }
-}
-.print-footer {
-  display:none; text-align:center; font-size:12px; color:#9CA3AF;
-  border-top:1px dashed var(--border); padding-top:14px; margin-top:4px; line-height:1.9;
+.sel-item:last-child { border-bottom: none; }
+.sel-item-icon { font-size: 20px; }
+.sel-item-name { flex: 1; font-weight: 500; }
+.sel-item-info { font-size: 12px; color: var(--sub); text-align: right; line-height: 1.5; }
+.edit-btn {
+  font-size: 12px; color: var(--accent); background: none; border: 1px solid var(--accent);
+  border-radius: var(--rs); padding: 3px 8px; cursor: pointer;
 }
 </style>
 </head>
 <body>
 
-<!-- ヘッダー（両画面共通） -->
 <header>
-  <div class="h-left">
-    <!-- セラピスト用 -->
-    <span class="h-title" id="hTitle">🩺 訓練メニュー作成</span>
-    <span class="h-badge" id="hBadge"></span>
-  </div>
-  <div>
-    <button class="h-btn h-btn-back" id="hBack" style="display:none" onclick="showTherapist()">← セラピスト画面</button>
-    <button class="h-btn h-btn-go" id="hGo" onclick="showPatient()">👴 患者画面を見る →</button>
-    <button class="h-btn" style="background:var(--bg);border:1px solid var(--border);color:var(--text);display:none" id="hPrint" onclick="window.print()">🖨️ 印刷</button>
-  </div>
+  <div class="header-title">🩺 セラピスト — 訓練メニュー作成</div>
+  <span class="header-badge" id="hbadge"></span>
 </header>
 
-<!-- ===== セラピスト画面 ===== -->
-<div class="screen active" id="screenT">
 <div class="wrap">
 
+  <!-- フィルター -->
   <div class="filter-box">
     <div class="filter-top">
-      <span class="flabel">🔍 絞り込み</span>
-      <button class="clear-link" onclick="clearF()">クリア</button>
+      <span class="filter-label">🔍 絞り込み</span>
+      <button class="clear-link" onclick="clearFilters()">すべてクリア</button>
     </div>
-    <div class="frow"><div class="fname">🧍 姿勢</div><div class="pills">
-      <span class="pill" data-g="p" data-v="臥位" onclick="tog(this)">臥位</span>
-      <span class="pill" data-g="p" data-v="腹臥位" onclick="tog(this)">腹臥位</span>
-      <span class="pill" data-g="p" data-v="側臥位" onclick="tog(this)">側臥位</span>
-      <span class="pill" data-g="p" data-v="端坐位" onclick="tog(this)">端坐位</span>
-      <span class="pill" data-g="p" data-v="立位" onclick="tog(this)">立位</span>
-    </div></div>
-    <div class="frow"><div class="fname">💪 運動種類</div><div class="pills">
-      <span class="pill" data-g="t" data-v="筋トレ" onclick="tog(this)">筋トレ</span>
-      <span class="pill" data-g="t" data-v="ストレッチ" onclick="tog(this)">ストレッチ</span>
-      <span class="pill" data-g="t" data-v="バランス" onclick="tog(this)">バランス</span>
-    </div></div>
-    <div class="frow"><div class="fname">🦵 部位</div><div class="pills">
-      <span class="pill" data-g="b" data-v="上肢" onclick="tog(this)">上肢</span>
-      <span class="pill" data-g="b" data-v="下肢" onclick="tog(this)">下肢</span>
-      <span class="pill" data-g="b" data-v="体幹" onclick="tog(this)">体幹</span>
-    </div></div>
-    <div class="frow"><div class="fname">🚶 有酸素</div><div class="pills">
-      <span class="pill" data-g="c" data-v="歩行" onclick="tog(this)">歩行</span>
-      <span class="pill" data-g="c" data-v="階段" onclick="tog(this)">階段</span>
-      <span class="pill" data-g="c" data-v="自転車" onclick="tog(this)">自転車</span>
-    </div></div>
+    <div class="frow">
+      <div class="fname">🧍 姿勢</div>
+      <div class="pills" id="fp">
+        <span class="pill" data-g="p" data-v="臥位" onclick="tog(this)">臥位</span>
+        <span class="pill" data-g="p" data-v="腹臥位" onclick="tog(this)">腹臥位</span>
+        <span class="pill" data-g="p" data-v="側臥位" onclick="tog(this)">側臥位</span>
+        <span class="pill" data-g="p" data-v="端坐位" onclick="tog(this)">端坐位</span>
+        <span class="pill" data-g="p" data-v="立位" onclick="tog(this)">立位</span>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fname">💪 運動種類</div>
+      <div class="pills">
+        <span class="pill" data-g="t" data-v="筋トレ" onclick="tog(this)">筋トレ</span>
+        <span class="pill" data-g="t" data-v="ストレッチ" onclick="tog(this)">ストレッチ</span>
+        <span class="pill" data-g="t" data-v="バランス" onclick="tog(this)">バランス</span>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fname">🦵 部位</div>
+      <div class="pills">
+        <span class="pill" data-g="b" data-v="上肢" onclick="tog(this)">上肢</span>
+        <span class="pill" data-g="b" data-v="下肢" onclick="tog(this)">下肢</span>
+        <span class="pill" data-g="b" data-v="体幹" onclick="tog(this)">体幹</span>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fname">🚶 有酸素</div>
+      <div class="pills">
+        <span class="pill" data-g="c" data-v="歩行" onclick="tog(this)">歩行</span>
+        <span class="pill" data-g="c" data-v="階段" onclick="tog(this)">階段</span>
+        <span class="pill" data-g="c" data-v="自転車" onclick="tog(this)">自転車</span>
+      </div>
+    </div>
   </div>
 
+  <!-- 選択済みリスト -->
   <div class="sel-list" id="selList">
-    <div class="sel-title">✅ 選択中の訓練</div>
+    <div class="sel-list-title">✅ 選択中の訓練</div>
     <div id="selItems"></div>
   </div>
 
-  <div class="rhead"><span class="rcount" id="rcnt"></span></div>
+  <!-- 結果 -->
+  <div class="rhead">
+    <span class="rcount" id="rcnt"></span>
+  </div>
   <div class="grid" id="grid"></div>
 
-</div>
-</div>
-
-<!-- ===== 患者画面 ===== -->
-<div class="screen" id="screenP">
-<div class="p-wrap">
-  <div class="p-meta" id="pMeta"></div>
-  <div id="pCards"></div>
-  <div class="print-footer">
-    ※ QRコードをスマートフォンで読み込むと、動作の確認ができます。<br>
-    わからないことは担当の療法士にお気軽にお尋ねください。
-  </div>
-</div>
 </div>
 
 <!-- 設定パネル -->
 <div class="cfg-panel" id="cfgPanel">
   <div class="cfg-head">
-    <span class="cfg-name" id="cfgName"></span>
+    <span class="cfg-title" id="cfgName"></span>
     <button class="cfg-close" onclick="closePanel()">×</button>
   </div>
+
   <div class="cfg-row">
-    <div class="cfg-lbl">🔢 回数</div>
-    <div class="chips" id="cr">
-      <span class="chip" data-g="reps" data-v="5"  onclick="pick(this)">5回</span>
-      <span class="chip" data-g="reps" data-v="10" onclick="pick(this)">10回</span>
-      <span class="chip" data-g="reps" data-v="15" onclick="pick(this)">15回</span>
-      <span class="chip" data-g="reps" data-v="20" onclick="pick(this)">20回</span>
-      <span class="chip" data-g="reps" data-v="30" onclick="pick(this)">30回</span>
+    <div class="cfg-label">🔢 回数</div>
+    <div class="cfg-chips" id="chipsReps">
+      <span class="chip" data-group="reps" data-val="5"  onclick="pickChip(this)">5回</span>
+      <span class="chip" data-group="reps" data-val="10" onclick="pickChip(this)">10回</span>
+      <span class="chip" data-group="reps" data-val="15" onclick="pickChip(this)">15回</span>
+      <span class="chip" data-group="reps" data-val="20" onclick="pickChip(this)">20回</span>
+      <span class="chip" data-group="reps" data-val="30" onclick="pickChip(this)">30回</span>
     </div>
   </div>
+
   <div class="cfg-row">
-    <div class="cfg-lbl">🔄 セット数</div>
-    <div class="chips">
-      <span class="chip" data-g="sets" data-v="1" onclick="pick(this)">1セット</span>
-      <span class="chip" data-g="sets" data-v="2" onclick="pick(this)">2セット</span>
-      <span class="chip" data-g="sets" data-v="3" onclick="pick(this)">3セット</span>
-      <span class="chip" data-g="sets" data-v="5" onclick="pick(this)">5セット</span>
+    <div class="cfg-label">🔄 セット数</div>
+    <div class="cfg-chips" id="chipsSets">
+      <span class="chip" data-group="sets" data-val="1" onclick="pickChip(this)">1セット</span>
+      <span class="chip" data-group="sets" data-val="2" onclick="pickChip(this)">2セット</span>
+      <span class="chip" data-group="sets" data-val="3" onclick="pickChip(this)">3セット</span>
+      <span class="chip" data-group="sets" data-val="5" onclick="pickChip(this)">5セット</span>
     </div>
   </div>
+
   <div class="cfg-row">
-    <div class="cfg-lbl">⏱️ キープ時間</div>
-    <div class="chips">
-      <span class="chip chosen" data-g="sec" data-v=""   onclick="pick(this)">なし</span>
-      <span class="chip" data-g="sec" data-v="10" onclick="pick(this)">10秒</span>
-      <span class="chip" data-g="sec" data-v="20" onclick="pick(this)">20秒</span>
-      <span class="chip" data-g="sec" data-v="30" onclick="pick(this)">30秒</span>
-      <span class="chip" data-g="sec" data-v="60" onclick="pick(this)">60秒</span>
+    <div class="cfg-label">⏱️ キープ時間</div>
+    <div class="cfg-chips" id="chipsSec">
+      <span class="chip" data-group="sec" data-val=""   onclick="pickChip(this)">なし</span>
+      <span class="chip" data-group="sec" data-val="10" onclick="pickChip(this)">10秒</span>
+      <span class="chip" data-group="sec" data-val="20" onclick="pickChip(this)">20秒</span>
+      <span class="chip" data-group="sec" data-val="30" onclick="pickChip(this)">30秒</span>
+      <span class="chip" data-group="sec" data-val="60" onclick="pickChip(this)">60秒</span>
     </div>
   </div>
-  <button class="save-btn" onclick="savePanel()">✅ 保存して追加</button>
+
+  <button style="width:100%;margin-top:14px;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:var(--rs);font-size:16px;font-weight:600;cursor:pointer;" onclick="savePanel()">✅ 保存して追加</button>
 </div>
+
+<!-- 患者画面へボタン -->
+<button class="go-btn" id="goBtn" onclick="goPatient()">👴 患者画面を開く</button>
 
 <script>
 const EX = [
-  { id:1,  icon:"🦵", name:"大腿四頭筋トレーニング",   p:["臥位"],   t:["筋トレ"],   b:["下肢"],        c:[] },
-  { id:2,  icon:"🏋️", name:"ブリッジ運動",             p:["臥位"],   t:["筋トレ"],   b:["下肢","体幹"], c:[] },
-  { id:3,  icon:"🧘", name:"ハムストリングスストレッチ",p:["臥位"],   t:["ストレッチ"],b:["下肢"],       c:[] },
-  { id:4,  icon:"🤸", name:"体幹回旋ストレッチ",        p:["側臥位"], t:["ストレッチ"],b:["体幹"],       c:[] },
-  { id:5,  icon:"💪", name:"肩関節外転運動",             p:["側臥位"], t:["筋トレ"],   b:["上肢"],        c:[] },
-  { id:6,  icon:"🙆", name:"肩甲骨寄せ運動",             p:["端坐位"], t:["筋トレ"],   b:["上肢","体幹"], c:[] },
-  { id:7,  icon:"✋", name:"握力訓練",                   p:["端坐位"], t:["筋トレ"],   b:["上肢"],        c:[] },
-  { id:8,  icon:"🪑", name:"端坐位バランス練習",          p:["端坐位"], t:["バランス"], b:["体幹"],        c:[] },
-  { id:9,  icon:"🧍", name:"立位バランス練習",            p:["立位"],   t:["バランス"], b:["下肢","体幹"], c:[] },
-  { id:10, icon:"🦶", name:"カーフレイズ",               p:["立位"],   t:["筋トレ"],   b:["下肢"],        c:[] },
-  { id:11, icon:"🚶", name:"歩行練習",                   p:["立位"],   t:[],           b:["下肢"],        c:["歩行"] },
-  { id:12, icon:"🪜", name:"階段昇降練習",               p:["立位"],   t:[],           b:["下肢"],        c:["階段"] },
-  { id:13, icon:"🚲", name:"エルゴメーター",             p:["端坐位"], t:[],           b:["下肢"],        c:["自転車"] },
+  { id:1, icon:"🦵", name:"大腿四頭筋トレーニング", p:["臥位"], t:["筋トレ"], b:["下肢"], c:[] },
+  { id:2, icon:"🏋️", name:"ブリッジ運動",           p:["臥位"], t:["筋トレ"], b:["下肢","体幹"], c:[] },
+  { id:3, icon:"🧘", name:"ハムストリングスストレッチ", p:["臥位"], t:["ストレッチ"], b:["下肢"], c:[] },
+  { id:4, icon:"🤸", name:"体幹回旋ストレッチ",       p:["側臥位"], t:["ストレッチ"], b:["体幹"], c:[] },
+  { id:5, icon:"💪", name:"肩関節外転運動",            p:["側臥位"], t:["筋トレ"], b:["上肢"], c:[] },
+  { id:6, icon:"🙆", name:"肩甲骨寄せ運動",            p:["端坐位"], t:["筋トレ"], b:["上肢","体幹"], c:[] },
+  { id:7, icon:"✋", name:"握力訓練",                  p:["端坐位"], t:["筋トレ"], b:["上肢"], c:[] },
+  { id:8, icon:"🪑", name:"端坐位バランス練習",         p:["端坐位"], t:["バランス"], b:["体幹"], c:[] },
+  { id:9, icon:"🧍", name:"立位バランス練習",           p:["立位"], t:["バランス"], b:["下肢","体幹"], c:[] },
+  { id:10, icon:"🦶", name:"カーフレイズ",             p:["立位"], t:["筋トレ"], b:["下肢"], c:[] },
+  { id:11, icon:"🚶", name:"歩行練習",                 p:["立位"], t:[], b:["下肢"], c:["歩行"] },
+  { id:12, icon:"🪜", name:"階段昇降練習",             p:["立位"], t:[], b:["下肢"], c:["階段"] },
+  { id:13, icon:"🚲", name:"エルゴメーター",           p:["端坐位"], t:[], b:["下肢"], c:["自転車"] },
 ];
 
-const filters = { p:new Set(), t:new Set(), b:new Set(), c:new Set() };
-const selected = {};
+const filters = { p: new Set(), t: new Set(), b: new Set(), c: new Set() };
+const selected = {};   // id -> { reps, sets, sec }
 let editingId = null;
 
-// フィルター
+function pickChip(el) {
+  const g = el.dataset.group;
+  document.querySelectorAll(`.chip[data-group="${g}"]`).forEach(c => c.classList.remove('chosen'));
+  el.classList.add('chosen');
+}
+
+function getChip(group) {
+  const el = document.querySelector(`.chip[data-group="${group}"].chosen`);
+  return el ? el.dataset.val : '';
+}
+
 function tog(el) {
-  const g=el.dataset.g, v=el.dataset.v;
-  const cls={p:'ap',t:'at',b:'ab',c:'ac'}[g];
-  filters[g].has(v) ? (filters[g].delete(v), el.classList.remove(cls))
-                    : (filters[g].add(v),    el.classList.add(cls));
+  const g = el.dataset.g, v = el.dataset.v;
+  const cls = {p:'ap',t:'at',b:'ab',c:'ac'}[g];
+  if (filters[g].has(v)) { filters[g].delete(v); el.classList.remove(cls); }
+  else { filters[g].add(v); el.classList.add(cls); }
   render();
 }
-function clearF() {
+function clearFilters() {
   Object.keys(filters).forEach(g => {
     filters[g].clear();
-    document.querySelectorAll(`[data-g="${g}"]`).forEach(e => e.className='pill');
+    document.querySelectorAll(`[data-g="${g}"]`).forEach(el => el.className = 'pill');
   });
   render();
 }
+
 function match(ex) {
-  return ['p','t','b','c'].every(g =>
-    filters[g].size===0 || [...filters[g]].some(v => ex[g].includes(v))
-  );
+  const ok = (g, f) => filters[g].size === 0 || [...filters[g]].some(v => ex[f].includes(v));
+  return ok('p','p') && ok('t','t') && ok('b','b') && ok('c','c');
 }
 
-// カード描画
 function tags(ex) {
   return [
     ...ex.p.map(v=>`<span class="tag tp">${v}</span>`),
@@ -358,157 +338,128 @@ function tags(ex) {
     ...ex.c.map(v=>`<span class="tag tc">${v}</span>`),
   ].join('');
 }
+
 function render() {
   const matched = EX.filter(match);
   document.getElementById('rcnt').textContent = `${matched.length} 件`;
-  document.getElementById('grid').innerHTML = matched.length ? matched.map(ex => {
-    const sel = !!selected[ex.id];
-    return `<div class="ecard${sel?' sel':''}" onclick="clickCard(${ex.id})">
-      <div class="ecard-top"><div class="eicon">${ex.icon}</div><div class="chk">${sel?'✓':''}</div></div>
+
+  if (!matched.length) {
+    document.getElementById('grid').innerHTML = `<div class="empty"><div class="empty-icon">🔍</div>絞り込み結果がありません</div>`;
+    return;
+  }
+  document.getElementById('grid').innerHTML = matched.map(ex => {
+    const s = selected[ex.id];
+    const isSel = !!s;
+    return `<div class="ecard${isSel?' sel':''}" onclick="clickCard(${ex.id})">
+      <div class="ecard-top">
+        <div class="ecard-icon">${ex.icon}</div>
+        <div class="chk">${isSel?'✓':''}</div>
+      </div>
       <div class="ename">${ex.name}</div>
       <div class="etags">${tags(ex)}</div>
     </div>`;
-  }).join('') : `<div class="empty"><div class="empty-ico">🔍</div>絞り込み結果がありません</div>`;
+  }).join('');
+
   renderSelList();
-  updateUI();
+  updateBadge();
 }
 
 function clickCard(id) {
-  if (selected[id]) { delete selected[id]; render(); }
-  else { selected[id]={reps:'',sets:'',sec:''}; openPanel(id); }
+  if (selected[id]) {
+    delete selected[id];
+    render();
+  } else {
+    selected[id] = { reps:'', sets:'', sec:'', rest:'', memo:'' };
+    openPanel(id);
+  }
 }
 
-// 設定パネル
-function pick(el) {
-  const g=el.dataset.g;
-  document.querySelectorAll(`.chip[data-g="${g}"]`).forEach(c=>c.classList.remove('chosen'));
-  el.classList.add('chosen');
-}
-function getChip(g) {
-  const el=document.querySelector(`.chip[data-g="${g}"].chosen`);
-  return el ? el.dataset.val : '';
-}
 function openPanel(id) {
-  editingId=id;
-  const ex=EX.find(e=>e.id===id);
-  const s=selected[id]||{};
-  document.getElementById('cfgName').textContent=ex.icon+'  '+ex.name;
-  ['reps','sets','sec'].forEach(g=>{
-    document.querySelectorAll(`.chip[data-g="${g}"]`).forEach(c=>{
-      c.classList.toggle('chosen', c.dataset.val===(s[g]||''));
+  editingId = id;
+  const ex = EX.find(e => e.id === id);
+  const s = selected[id] || {};
+  document.getElementById('cfgName').textContent = ex.icon + '  ' + ex.name;
+
+  // チップをリセットして既存値を復元
+  ['reps','sets','sec'].forEach(g => {
+    document.querySelectorAll(`.chip[data-group="${g}"]`).forEach(c => {
+      c.classList.toggle('chosen', c.dataset.val === (s[g] || ''));
     });
   });
-  if(!s.sec) {
-    const n=document.querySelector('.chip[data-g="sec"][data-v=""]');
-    if(n) n.classList.add('chosen');
+  // キープ「なし」を初期選択
+  if (!s.sec) {
+    const none = document.querySelector('.chip[data-group="sec"][data-val=""]');
+    if (none) none.classList.add('chosen');
   }
+
   document.getElementById('cfgPanel').classList.add('open');
 }
+
 function closePanel() {
   document.getElementById('cfgPanel').classList.remove('open');
-  editingId=null;
-}
-function savePanel() {
-  if(!editingId) return;
-  selected[editingId]={ reps:getChip('reps'), sets:getChip('sets'), sec:getChip('sec') };
-  closePanel(); render();
+  editingId = null;
 }
 
-// 選択リスト
+function savePanel() {
+  if (!editingId) return;
+  selected[editingId] = {
+    reps: getChip('reps'),
+    sets: getChip('sets'),
+    sec:  getChip('sec'),
+  };
+  closePanel();
+  render();
+}
+
 function renderSelList() {
-  const ids=Object.keys(selected).map(Number);
-  const list=document.getElementById('selList');
-  const items=document.getElementById('selItems');
-  if(!ids.length){ list.classList.remove('on'); return; }
+  const ids = Object.keys(selected).map(Number);
+  const list = document.getElementById('selList');
+  const items = document.getElementById('selItems');
+  if (!ids.length) { list.classList.remove('on'); return; }
   list.classList.add('on');
-  items.innerHTML=ids.map(id=>{
-    const ex=EX.find(e=>e.id===id), s=selected[id];
-    const info=[s.reps?s.reps+'回':'', s.sets?s.sets+'セット':'', s.sec?s.sec+'秒':''].filter(Boolean).join(' × ')||'未設定';
+  items.innerHTML = ids.map(id => {
+    const ex = EX.find(e => e.id === id);
+    const s = selected[id];
+    const info = [
+      s.reps ? `${s.reps}回` : '',
+      s.sets ? `${s.sets}セット` : '',
+      s.sec  ? `${s.sec}秒キープ` : '',
+    ].filter(Boolean).join(' × ') || '未設定';
     return `<div class="sel-item">
-      <span class="sicon">${ex.icon}</span>
-      <span class="sname">${ex.name}</span>
-      <span class="sinfo">${info}</span>
+      <div class="sel-item-icon">${ex.icon}</div>
+      <div class="sel-item-name">${ex.name}</div>
+      <div class="sel-item-info">${info}</div>
       <button class="edit-btn" onclick="openPanel(${id});event.stopPropagation()">編集</button>
     </div>`;
   }).join('');
 }
 
-function updateUI() {
-  const n=Object.keys(selected).length;
-  const badge=document.getElementById('hBadge');
-  const go=document.getElementById('hGo');
-  if(n){ badge.textContent=`${n}件選択中`; badge.classList.add('on'); go.classList.add('on'); }
-  else { badge.classList.remove('on'); go.classList.remove('on'); }
+function updateBadge() {
+  const n = Object.keys(selected).length;
+  const b = document.getElementById('hbadge');
+  const g = document.getElementById('goBtn');
+  if (n) { b.textContent = `${n}件選択中`; b.classList.add('on'); g.classList.add('on'); }
+  else   { b.classList.remove('on'); g.classList.remove('on'); }
 }
 
-// 画面切替
-function showPatient() {
-  const ids=Object.keys(selected).map(Number);
-  if(!ids.length) return;
-
-  document.getElementById('pMeta').textContent =
-    '作成日：'+new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
-
-  // QRコードをリセット
-  const pCards=document.getElementById('pCards');
-  pCards.innerHTML='';
-
-  ids.forEach((id,idx)=>{
-    const ex=EX.find(e=>e.id===id), s=selected[id];
-    const nums=[];
-    if(s.reps) nums.push(s.reps+'回');
-    if(s.sets) nums.push(s.sets+'セット');
-    if(s.sec)  nums.push(s.sec+'秒キープ');
-
-    const card=document.createElement('div');
-    card.className='ex-card';
-    card.innerHTML=`
-      <div class="ex-head">
-        <div class="ex-bigicon">${ex.icon}</div>
-        <div>
-          <div class="ex-exname">${ex.name}</div>
-          <div class="ex-nums">${nums.map(n=>`<span class="ex-num">${n}</span>`).join('')}</div>
-        </div>
-      </div>
-      <div class="ex-media">
-        <div class="ph">
-          <span class="ph-ico">${ex.icon}</span>
-          <div class="ph-txt">GIF・イラストをここに配置</div>
-        </div>
-      </div>
-      <div class="ex-qr">
-        <div id="qr${idx}" style="flex-shrink:0"></div>
-        <div class="qr-desc"><strong>QRコードをスマートフォンで読み込むと</strong><br>動作の確認ができます。<br>インストール不要です。</div>
-      </div>`;
-    pCards.appendChild(card);
-
-    new QRCode(document.getElementById(`qr${idx}`),{
-      text: location.href+'#ex'+id,
-      width:88, height:88, colorDark:'#1A1D23', colorLight:'#ffffff'
-    });
-  });
-
-  document.getElementById('screenT').classList.remove('active');
-  document.getElementById('screenP').classList.add('active');
-  document.getElementById('hTitle').textContent='🏥 自主訓練メニュー';
-  document.getElementById('hBack').style.display='inline-block';
-  document.getElementById('hGo').classList.remove('on');
-  document.getElementById('hBadge').classList.remove('on');
-  document.getElementById('hPrint').style.display='inline-block';
-  window.scrollTo(0,0);
-}
-
-function showTherapist() {
-  document.getElementById('screenP').classList.remove('active');
-  document.getElementById('screenT').classList.add('active');
-  document.getElementById('hTitle').textContent='🩺 訓練メニュー作成';
-  document.getElementById('hBack').style.display='none';
-  document.getElementById('hPrint').style.display='none';
-  updateUI();
-  window.scrollTo(0,0);
+function goPatient() {
+  const ids = Object.keys(selected).map(Number);
+  if (!ids.length) return;
+  const params = ids.map(id => {
+    const s = selected[id];
+    return `id=${id}&reps=${encodeURIComponent(s.reps)}&sets=${encodeURIComponent(s.sets)}&sec=${encodeURIComponent(s.sec)}`;
+  }).join('|');
+  window.open(`patient.html?plan=${encodeURIComponent(params)}`, '_blank');
 }
 
 render();
+
+// PWA: サービスワーカー登録
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
