@@ -172,7 +172,10 @@ header {
 
 <header>
   <div class="header-title">🩺 セラピスト — 訓練メニュー作成</div>
-  <span class="header-badge" id="hbadge"></span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button onclick="clearSelected()" style="font-size:12px;padding:4px 10px;border:1px solid #E4E7EC;border-radius:999px;background:#fff;color:#6B7280;cursor:pointer;">🔄 リセット</button>
+    <span class="header-badge" id="hbadge"></span>
+  </div>
 </header>
 
 <div class="wrap">
@@ -279,6 +282,28 @@ header {
 <button class="go-btn" id="goBtn" onclick="goPatient()">👴 患者画面を開く</button>
 
 <script>
+// ── localStorage キー ──────────────────────────
+const STORAGE_KEY = 'trainingMenu_selected';
+
+// 保存：selectedオブジェクトをJSON文字列にしてlocalStorageに書き込む
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(selected));
+  } catch(e) {}
+}
+
+// 復元：ページ起動時にlocalStorageから読み込む
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      Object.assign(selected, data);
+    }
+  } catch(e) {}
+}
+// ────────────────────────────────────────────────
+
 const EX = [
   { id:1, icon:"🦵", name:"大腿四頭筋トレーニング", p:["臥位"], t:["筋トレ"], b:["下肢"], c:[] },
   { id:2, icon:"🏋️", name:"ブリッジ運動",           p:["臥位"], t:["筋トレ"], b:["下肢","体幹"], c:[] },
@@ -367,6 +392,7 @@ function render() {
 function clickCard(id) {
   if (selected[id]) {
     delete selected[id];
+    saveToStorage();   // ← 保存
     render();
   } else {
     selected[id] = { reps:'', sets:'', sec:'', rest:'', memo:'' };
@@ -407,6 +433,7 @@ function savePanel() {
     sets: getChip('sets'),
     sec:  getChip('sec'),
   };
+  saveToStorage();   // ← 保存
   closePanel();
   render();
 }
@@ -452,7 +479,18 @@ function goPatient() {
   window.open(`patient.html?plan=${encodeURIComponent(params)}`, '_blank');
 }
 
+// ページ起動時：保存データを読み込んでから描画
+loadFromStorage();
 render();
+
+// 「選択をリセット」ボタン用（ヘッダー横に追加済み）
+function clearSelected() {
+  if (!Object.keys(selected).length) return;
+  if (!confirm('選択中の訓練をすべてリセットしますか？')) return;
+  Object.keys(selected).forEach(k => delete selected[k]);
+  saveToStorage();
+  render();
+}
 
 // PWA: サービスワーカー登録
 if ('serviceWorker' in navigator) {
