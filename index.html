@@ -20,6 +20,7 @@
   --orange-bg: #FFF7ED;
   --pink: #DB2777;
   --pink-bg: #FDF2F8;
+  --danger: #DC2626;
   --r: 12px;
   --rs: 8px;
 }
@@ -87,7 +88,8 @@ header {
 .ecard:hover { border-color: #9CA3AF; }
 .ecard.sel { border-color: var(--accent); background: var(--accent-bg); }
 .ecard-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
-.eicon { font-size: 28px; line-height: 1; }
+.eicon { font-size: 28px; line-height: 1; cursor: pointer; }
+.eicon:hover { transform: scale(1.15); }
 .chk {
   width: 22px; height: 22px; border-radius: 50%;
   border: 2px solid var(--border); background: var(--surface);
@@ -113,6 +115,7 @@ header {
 .sname { flex:1; font-weight:500; }
 .sinfo { font-size:12px; color:var(--sub); text-align:right; }
 .edit-btn { font-size:11px; color:var(--accent); border:1px solid var(--accent); background:none; border-radius:6px; padding:2px 8px; cursor:pointer; }
+.del-btn { font-size:11px; color:var(--danger); border:1px solid var(--danger); background:none; border-radius:6px; padding:2px 8px; cursor:pointer; }
 
 /* 設定パネル */
 .cfg-panel {
@@ -168,6 +171,11 @@ header {
   background:#EEF2F7;
   display:flex; align-items:center; justify-content:center;
   min-height:190px; border-bottom:1px solid var(--border);
+}
+.prev-media {
+  background:#EEF2F7; border-radius:var(--rs);
+  display:flex; align-items:center; justify-content:center;
+  min-height:190px; margin-bottom:14px; overflow:hidden;
 }
 .ph { text-align:center; color:#9CA3AF; padding:20px; }
 .ph-ico { font-size:60px; margin-bottom:8px; display:block; }
@@ -307,6 +315,15 @@ header {
   <button class="save-btn" onclick="savePanel()">✅ 保存して追加</button>
 </div>
 
+<div class="cfg-panel" id="prevPanel">
+  <div class="cfg-head">
+    <span class="cfg-name" id="prevName"></span>
+    <button class="cfg-close" onclick="closePreview()">×</button>
+  </div>
+  <div class="prev-media" id="prevMedia"></div>
+  <button class="save-btn" id="prevSelectBtn" onclick="selectFromPreview()">✅ この訓練を選択する</button>
+</div>
+
 <script>
 const EX = [
   { id:1,  icon:"🦵", name:"大腿四頭筋トレーニング",   p:["臥位"],   t:["筋トレ"],   b:["下肢"],        c:[] },
@@ -371,7 +388,7 @@ function render() {
   document.getElementById('grid').innerHTML = matched.length ? matched.map(ex => {
     const sel = !!selected[ex.id];
     return `<div class="ecard${sel?' sel':''}" onclick="clickCard(${ex.id})">
-      <div class="ecard-top"><div class="eicon">${ex.icon}</div><div class="chk">${sel?'✓':''}</div></div>
+      <div class="ecard-top"><div class="eicon" onclick="openPreview(${ex.id});event.stopPropagation()">${ex.icon}</div><div class="chk">${sel?'✓':''}</div></div>
       <div class="ename">${ex.name}</div>
       <div class="etags">${tags(ex)}</div>
     </div>`;
@@ -383,6 +400,10 @@ function render() {
 function clickCard(id) {
   if (selected[id]) { delete selected[id]; render(); }
   else { selected[id]={reps:'',sets:'',sec:''}; openPanel(id); }
+}
+function removeSelected(id) {
+  delete selected[id];
+  render();
 }
 
 // 設定パネル
@@ -421,6 +442,31 @@ function savePanel() {
   closePanel(); render();
 }
 
+// プレビュー（設定前に訓練の中身を確認する）
+let previewId = null;
+function openPreview(id) {
+  previewId = id;
+  const ex = EX.find(e => e.id === id);
+  document.getElementById('prevName').textContent = ex.icon + '  ' + ex.name;
+  document.getElementById('prevMedia').innerHTML = ex.gif
+    ? `<img src="${ex.gif}" alt="${ex.name}" style="max-width:100%;max-height:260px;object-fit:contain;">`
+    : `<div class="ph"><span class="ph-ico">${ex.icon}</span><div class="ph-txt">GIF・イラストをここに配置</div></div>`;
+  document.getElementById('prevSelectBtn').textContent = selected[id] ? '✅ 選択済み（設定を編集する）' : '✅ この訓練を選択する';
+  document.getElementById('prevPanel').classList.add('open');
+}
+function closePreview() {
+  document.getElementById('prevPanel').classList.remove('open');
+  previewId = null;
+}
+function selectFromPreview() {
+  if (!previewId) return;
+  const id = previewId;
+  closePreview();
+  if (!selected[id]) selected[id] = { reps:'', sets:'', sec:'' };
+  render();
+  openPanel(id);
+}
+
 // 選択リスト
 function renderSelList() {
   const ids=Object.keys(selected).map(Number);
@@ -436,6 +482,7 @@ function renderSelList() {
       <span class="sname">${ex.name}</span>
       <span class="sinfo">${info}</span>
       <button class="edit-btn" onclick="openPanel(${id});event.stopPropagation()">編集</button>
+      <button class="del-btn" onclick="removeSelected(${id});event.stopPropagation()">解除</button>
     </div>`;
   }).join('');
 }
